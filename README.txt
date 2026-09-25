@@ -64,6 +64,9 @@ COMMANDS
 
 INSTALLATION
 ------------
+Download the latest zip from:
+https://github.com/Topherr/YeahRight/releases/latest
+
 1. Extract the YeahRight folder into:
    World of Warcraft\_retail_\Interface\AddOns\
 
