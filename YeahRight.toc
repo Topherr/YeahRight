@@ -1,7 +1,7 @@
 ## Interface: 120100
 ## Title: Yeah Right
 ## Notes: Replies "yeah right" to "yeah right", "grats" to "ding", says "ding" when you level up, and welcomes new guild members.
-## Version: 0.4.0-beta
+## Version: 0.4.1-beta
 ## Category: Chat
 ## IconTexture: Interface\AddOns\YeahRight\Media\Icon
 ## SavedVariables: YeahRightDB

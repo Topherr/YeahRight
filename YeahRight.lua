@@ -3,6 +3,8 @@ local ADDON_NAME = ...
 local SUPPRESSION_SECONDS = 10
 local LEVEL_UP_TEXT = "ding"
 local GUILD_WELCOME_TEXT = "WELCOME TO THE GUILD"
+-- New members don't see guild chat until a moment after the join message.
+local GUILD_WELCOME_DELAY_SECONDS = 5
 
 -- Each trigger has its own suppression window per chat type. "replyToSelf"
 -- lets the ding trigger congratulate your own level-up announcement; this
@@ -192,8 +194,10 @@ local function HandleSystemMessage(message)
 
     local newMember = string.match(message, GUILD_JOIN_PATTERN)
     if newMember then
-        Debug(newMember .. " joined the guild")
-        AttemptSend(GUILD_WELCOME_TEXT, "GUILD")
+        Debug(newMember .. " joined the guild; welcoming in " .. GUILD_WELCOME_DELAY_SECONDS .. "s")
+        C_Timer.After(GUILD_WELCOME_DELAY_SECONDS, function()
+            AttemptSend(GUILD_WELCOME_TEXT, "GUILD")
+        end)
     end
 end
 

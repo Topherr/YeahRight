@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.4.0-beta
+Version 0.4.1-beta
 
 WHAT IT DOES
 ------------
@@ -22,8 +22,8 @@ you for your own ding.
 
 GUILD WELCOME
 -------------
-When someone joins your guild, the addon says "WELCOME TO THE GUILD" in guild
-chat. Every addon user in the guild will send it.
+When someone joins your guild, the addon waits 5 seconds (so the new member
+can see guild chat) and then says "WELCOME TO THE GUILD" in guild chat. Every addon user in the guild will send it.
 
 Supported chat types:
 - Guild
@@ -100,6 +100,9 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.4.1-beta
+- Delayed the guild welcome by 5 seconds so new members see it.
+
 0.4.0-beta
 - Says "WELCOME TO THE GUILD" in guild chat when someone joins the guild.
 
