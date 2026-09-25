@@ -2,6 +2,7 @@ local ADDON_NAME = ...
 
 local SUPPRESSION_SECONDS = 10
 local LEVEL_UP_TEXT = "ding"
+local GUILD_WELCOME_TEXT = "WELCOME TO THE GUILD"
 
 -- Each trigger has its own suppression window per chat type. "replyToSelf"
 -- lets the ding trigger congratulate your own level-up announcement; this
@@ -170,6 +171,32 @@ local function HandleChatEvent(event, message, sender, languageName, channelName
     end
 end
 
+-- Build a match pattern from the client's localized "%s has joined the guild."
+-- system message, so this works outside English clients too.
+local function FormatToPattern(format)
+    local pattern = string.gsub(format, "([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+    pattern = string.gsub(pattern, "%%%%s", "(.+)")
+    return "^" .. pattern .. "$"
+end
+
+local GUILD_JOIN_PATTERN = FormatToPattern(ERR_GUILD_JOIN_S or "%s has joined the guild.")
+
+local function HandleSystemMessage(message)
+    if not YeahRightDB or not YeahRightDB.enabled then
+        return
+    end
+
+    if IsSecret(message) or type(message) ~= "string" then
+        return
+    end
+
+    local newMember = string.match(message, GUILD_JOIN_PATTERN)
+    if newMember then
+        Debug(newMember .. " joined the guild")
+        AttemptSend(GUILD_WELCOME_TEXT, "GUILD")
+    end
+end
+
 local function AnnounceLevelUp()
     if not YeahRightDB or not YeahRightDB.enabled then
         return
@@ -189,6 +216,7 @@ end
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LEVEL_UP")
+frame:RegisterEvent("CHAT_MSG_SYSTEM")
 
 for event in pairs(EVENT_TO_CHAT_TYPE) do
     frame:RegisterEvent(event)
@@ -217,6 +245,11 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
     if event == "PLAYER_LEVEL_UP" then
         AnnounceLevelUp()
+        return
+    end
+
+    if event == "CHAT_MSG_SYSTEM" then
+        HandleSystemMessage(...)
         return
     end
 

@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.3.0-beta
+Version 0.4.0-beta
 
 WHAT IT DOES
 ------------
@@ -19,6 +19,11 @@ trigger it; "dinged" and "dinging" do not.
 When you level up, the addon says "ding" in guild chat (if you are in a guild)
 and in raid or party chat (if you are in a group). Yes, it will then grats
 you for your own ding.
+
+GUILD WELCOME
+-------------
+When someone joins your guild, the addon says "WELCOME TO THE GUILD" in guild
+chat. Every addon user in the guild will send it.
 
 Supported chat types:
 - Guild
@@ -95,6 +100,9 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.4.0-beta
+- Says "WELCOME TO THE GUILD" in guild chat when someone joins the guild.
+
 0.3.0-beta
 - Added "grats" reply to "ding", including your own dings.
 - Says "ding" in guild and group chat when you level up.
