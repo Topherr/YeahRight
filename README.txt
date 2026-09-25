@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.4.1-beta
+Version 0.5.0-beta
 
 WHAT IT DOES
 ------------
@@ -19,6 +19,11 @@ trigger it; "dinged" and "dinging" do not.
 When you level up, the addon says "ding" in guild chat (if you are in a guild)
 and in raid or party chat (if you are in a group). Yes, it will then grats
 you for your own ding.
+
+YOINK
+-----
+When you win an item roll in a group, the addon says "yoink" in party, raid,
+or instance chat.
 
 GUILD WELCOME
 -------------
@@ -100,6 +105,9 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.5.0-beta
+- Says "yoink" in group chat when you win a loot roll.
+
 0.4.1-beta
 - Delayed the guild welcome by 5 seconds so new members see it.
 

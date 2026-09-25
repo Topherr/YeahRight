@@ -3,6 +3,7 @@ local ADDON_NAME = ...
 local SUPPRESSION_SECONDS = 10
 local LEVEL_UP_TEXT = "ding"
 local GUILD_WELCOME_TEXT = "WELCOME TO THE GUILD"
+local LOOT_WON_TEXT = "yoink"
 -- New members don't see guild chat until a moment after the join message.
 local GUILD_WELCOME_DELAY_SECONDS = 5
 
@@ -201,6 +202,31 @@ local function HandleSystemMessage(message)
     end
 end
 
+local LOOT_WON_PATTERN = FormatToPattern(LOOT_ROLL_YOU_WON or "You won: %s")
+
+local function HandleLootMessage(message)
+    if not YeahRightDB or not YeahRightDB.enabled then
+        return
+    end
+
+    if IsSecret(message) or type(message) ~= "string" then
+        return
+    end
+
+    if not string.match(message, LOOT_WON_PATTERN) then
+        return
+    end
+
+    -- Queued dungeon/raid groups use instance chat instead of party/raid.
+    if LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        AttemptSend(LOOT_WON_TEXT, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        AttemptSend(LOOT_WON_TEXT, "RAID")
+    elseif IsInGroup() then
+        AttemptSend(LOOT_WON_TEXT, "PARTY")
+    end
+end
+
 local function AnnounceLevelUp()
     if not YeahRightDB or not YeahRightDB.enabled then
         return
@@ -221,6 +247,7 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LEVEL_UP")
 frame:RegisterEvent("CHAT_MSG_SYSTEM")
+frame:RegisterEvent("CHAT_MSG_LOOT")
 
 for event in pairs(EVENT_TO_CHAT_TYPE) do
     frame:RegisterEvent(event)
@@ -254,6 +281,11 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
     if event == "CHAT_MSG_SYSTEM" then
         HandleSystemMessage(...)
+        return
+    end
+
+    if event == "CHAT_MSG_LOOT" then
+        HandleLootMessage(...)
         return
     end
 
