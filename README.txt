@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.2.4-beta
+Version 0.3.0-beta
 
 WHAT IT DOES
 ------------
@@ -9,6 +9,16 @@ When another player sends a message containing "yeah right" or the joined form
 yeah right
 
 The reply uses the same chat type as the triggering message.
+
+DING / GRATS
+------------
+When anyone (including you) says the word "ding" in a supported chat type,
+the addon replies "grats" in that chat type. "Ding!", "DING", and "ding 60"
+trigger it; "dinged" and "dinging" do not.
+
+When you level up, the addon says "ding" in guild chat (if you are in a guild)
+and in raid or party chat (if you are in a group). Yes, it will then grats
+you for your own ding.
 
 Supported chat types:
 - Guild
@@ -29,8 +39,8 @@ Longer joined words such as "yeahrightly" do not trigger it.
 
 LOOP PREVENTION
 ---------------
-Each chat type has its own 10-second suppression window. Your own original
-"yeah right" or "yeahright" also starts that window. This lets multiple addon
+Each trigger has its own 10-second suppression window per chat type. Your own
+original "yeah right" or "yeahright" also starts that window. This lets multiple addon
 users respond once without their responses creating an endless loop.
 
 COMMANDS
@@ -85,6 +95,11 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.3.0-beta
+- Added "grats" reply to "ding", including your own dings.
+- Says "ding" in guild and group chat when you level up.
+- Suppression windows are now tracked per trigger and chat type.
+
 0.2.4-beta
 - Replaced the icon with the selected split YR monogram.
 - Increased separation between the letters for clearer small-size display.

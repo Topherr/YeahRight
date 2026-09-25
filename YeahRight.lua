@@ -1,7 +1,25 @@
 local ADDON_NAME = ...
 
-local RESPONSE_TEXT = "yeah right"
 local SUPPRESSION_SECONDS = 10
+local LEVEL_UP_TEXT = "ding"
+
+-- Each trigger has its own suppression window per chat type. "replyToSelf"
+-- lets the ding trigger congratulate your own level-up announcement; this
+-- cannot loop because "grats" does not contain the word "ding".
+local TRIGGERS = {
+    {
+        key = "yeahright",
+        pattern = "%syeah%s*right%s",
+        response = "yeah right",
+        replyToSelf = false,
+    },
+    {
+        key = "ding",
+        pattern = "%sding%s",
+        response = "grats",
+        replyToSelf = true,
+    },
+}
 
 local EVENT_TO_CHAT_TYPE = {
     CHAT_MSG_GUILD = "GUILD",
@@ -39,19 +57,13 @@ local function PrintHelp()
     Print("  /yeahright help - show this command list")
 end
 
-local function ContainsTrigger(message)
-    if IsSecret(message) or type(message) ~= "string" then
-        return false
-    end
-
+local function NormalizeMessage(message)
     -- Convert punctuation and repeated spacing into a single searchable form.
     -- This matches examples such as "Yeah Right", "yeah... right!", and the
     -- joined form "yeahright", while avoiding longer words like "yeahrightly".
     local normalized = string.lower(message)
     normalized = string.gsub(normalized, "[^%w]+", " ")
-    normalized = " " .. normalized .. " "
-
-    return string.find(normalized, "%syeah%s*right%s") ~= nil
+    return " " .. normalized .. " "
 end
 
 local function IsOwnMessage(sender, senderGUID)
@@ -85,7 +97,7 @@ local function CanAttemptSend(chatType)
     return true
 end
 
-local function AttemptReply(chatType)
+local function AttemptSend(text, chatType)
     local canSend, reason = CanAttemptSend(chatType)
     if not canSend then
         Debug("skipped " .. chatType .. ": " .. reason)
@@ -102,12 +114,12 @@ local function AttemptReply(chatType)
     -- The client may still refuse the send in a protected encounter; messages
     -- are intentionally not queued for later delivery.
     if type(securecallfunction) == "function" then
-        securecallfunction(sendFunction, RESPONSE_TEXT, chatType)
+        securecallfunction(sendFunction, text, chatType)
     else
-        sendFunction(RESPONSE_TEXT, chatType)
+        sendFunction(text, chatType)
     end
 
-    Debug("attempted reply in " .. chatType)
+    Debug("attempted \"" .. text .. "\" in " .. chatType)
 end
 
 local function HandleChatEvent(event, message, sender, languageName, channelName,
@@ -128,31 +140,55 @@ local function HandleChatEvent(event, message, sender, languageName, channelName
         return
     end
 
-    if not ContainsTrigger(message) then
+    if type(message) ~= "string" then
         return
     end
 
+    local normalized = NormalizeMessage(message)
+    local isOwn = IsOwnMessage(sender, senderGUID)
     local now = GetTime()
-    if now < (suppressionUntil[chatType] or 0) then
-        Debug("suppressed repeat trigger in " .. chatType)
+
+    for _, trigger in ipairs(TRIGGERS) do
+        if string.find(normalized, trigger.pattern) then
+            local suppressionKey = trigger.key .. ":" .. chatType
+
+            if now < (suppressionUntil[suppressionKey] or 0) then
+                Debug("suppressed repeat " .. trigger.key .. " in " .. chatType)
+            else
+                -- Start suppression before attempting a reply. This prevents
+                -- simultaneous addon responses from creating a feedback loop.
+                suppressionUntil[suppressionKey] = now + SUPPRESSION_SECONDS
+
+                if isOwn and not trigger.replyToSelf then
+                    Debug("recorded your own " .. trigger.key .. " in " .. chatType .. "; no reply sent")
+                else
+                    Debug("detected " .. trigger.key .. " in " .. chatType)
+                    AttemptSend(trigger.response, chatType)
+                end
+            end
+        end
+    end
+end
+
+local function AnnounceLevelUp()
+    if not YeahRightDB or not YeahRightDB.enabled then
         return
     end
 
-    -- Start suppression before attempting a reply. This prevents simultaneous
-    -- addon responses from triggering an endless feedback loop.
-    suppressionUntil[chatType] = now + SUPPRESSION_SECONDS
-
-    if IsOwnMessage(sender, senderGUID) then
-        Debug("recorded your own trigger in " .. chatType .. "; no reply sent")
-        return
+    if IsInGuild() then
+        AttemptSend(LEVEL_UP_TEXT, "GUILD")
     end
 
-    Debug("detected trigger in " .. chatType)
-    AttemptReply(chatType)
+    if IsInRaid() then
+        AttemptSend(LEVEL_UP_TEXT, "RAID")
+    elseif IsInGroup() then
+        AttemptSend(LEVEL_UP_TEXT, "PARTY")
+    end
 end
 
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
+frame:RegisterEvent("PLAYER_LEVEL_UP")
 
 for event in pairs(EVENT_TO_CHAT_TYPE) do
     frame:RegisterEvent(event)
@@ -176,6 +212,11 @@ frame:SetScript("OnEvent", function(self, event, ...)
         playerGUID = UnitGUID("player")
         self:UnregisterEvent("ADDON_LOADED")
         Debug("loaded; replies are " .. (YeahRightDB.enabled and "enabled" or "disabled"))
+        return
+    end
+
+    if event == "PLAYER_LEVEL_UP" then
+        AnnounceLevelUp()
         return
     end
 
