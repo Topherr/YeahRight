@@ -1,0 +1,9 @@
+## Interface: 120100
+## Title: Yeah Right
+## Notes: Replies "yeah right" in the same supported chat type when the phrase is detected.
+## Version: 0.2.4-beta
+## Category: Chat
+## IconTexture: Interface\AddOns\YeahRight\Media\Icon
+## SavedVariables: YeahRightDB
+
+YeahRight.lua
