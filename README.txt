@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.5.0-beta
+Version 0.5.1-beta
 
 WHAT IT DOES
 ------------
@@ -70,8 +70,8 @@ https://github.com/Topherr/YeahRight/releases/latest
 1. Extract the YeahRight folder into:
    World of Warcraft\_retail_\Interface\AddOns\
 
-   For the WoW Forever beta, use that client's corresponding Interface\AddOns
-   directory.
+   For the WoW Forever beta, use:
+   World of Warcraft\_classic_beta_\Interface\AddOns\
 
 2. The final structure must be:
    Interface\AddOns\YeahRight\YeahRight.toc
@@ -79,8 +79,6 @@ https://github.com/Topherr/YeahRight/releases/latest
    Interface\AddOns\YeahRight\README.txt
 
 3. At the character-selection screen, open AddOns and enable "Yeah Right".
-   If Forever uses a different interface number, also enable
-   "Load out-of-date AddOns" until the TOC is updated for the beta.
 
 4. Log in or run /reload.
 
@@ -108,6 +106,10 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.5.1-beta
+- Added the WoW Forever beta interface (16001) to the TOC so the addon loads
+  on beta build 1.60.1.70170 without "Load out-of-date AddOns".
+
 0.5.0-beta
 - Says "yoink" in group chat when you win a loot roll.
 
