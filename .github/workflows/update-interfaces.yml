@@ -1,0 +1,46 @@
+name: Update interface versions
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: update-interfaces
+  cancel-in-progress: false
+
+env:
+  # Blizzard product codes whose current client the TOC must support.
+  # wow = retail, wow_classic_beta = the WoW Forever beta.
+  PRODUCTS: wow wow_classic_beta
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Compare TOC with live client versions
+        id: check
+        run: python3 .github/scripts/update_interfaces.py >> "$GITHUB_OUTPUT"
+
+      - name: Commit and release
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.check.outputs.version }}
+          INTERFACES: ${{ steps.check.outputs.interfaces }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Update TOC interface to $INTERFACES ($VERSION)"
+          git push origin HEAD:main
+          # Pushes made with GITHUB_TOKEN don't trigger other workflows, so
+          # start the release explicitly.
+          gh workflow run release.yml --ref main

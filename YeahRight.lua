@@ -108,17 +108,19 @@ local function AttemptSend(text, chatType)
         return
     end
 
-    local sendFunction = C_ChatInfo and C_ChatInfo.SendChatMessage
+    -- Older and Classic-derived clients may only have the global function.
+    local sendFunction = (C_ChatInfo and C_ChatInfo.SendChatMessage) or SendChatMessage
     if type(sendFunction) ~= "function" then
-        Debug("skipped " .. chatType .. ": C_ChatInfo.SendChatMessage is unavailable")
+        Debug("skipped " .. chatType .. ": no SendChatMessage API is available")
         return
     end
 
     -- A secure call prevents taint from propagating into Blizzard's chat API.
     -- The client may still refuse the send in a protected encounter; messages
     -- are intentionally not queued for later delivery.
-    if type(securecallfunction) == "function" then
-        securecallfunction(sendFunction, text, chatType)
+    local secureCall = securecallfunction or securecall
+    if type(secureCall) == "function" then
+        secureCall(sendFunction, text, chatType)
     else
         sendFunction(text, chatType)
     end

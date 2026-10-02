@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.5.1-beta
+Version 0.5.2-beta
 
 WHAT IT DOES
 ------------
@@ -106,6 +106,13 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.5.2-beta
+- Falls back to the global SendChatMessage and securecall on clients that
+  lack C_ChatInfo.SendChatMessage or securecallfunction.
+- A scheduled GitHub workflow now keeps the TOC interface in step with the
+  current retail and Forever beta clients and publishes a release when it
+  changes.
+
 0.5.1-beta
 - Added the WoW Forever beta interface (16001) to the TOC so the addon loads
   on beta build 1.60.1.70170 without "Load out-of-date AddOns".
