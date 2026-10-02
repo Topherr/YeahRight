@@ -27,6 +27,8 @@ local TRIGGERS = {
 
 local EVENT_TO_CHAT_TYPE = {
     CHAT_MSG_GUILD = "GUILD",
+    CHAT_MSG_INSTANCE_CHAT = "INSTANCE_CHAT",
+    CHAT_MSG_INSTANCE_CHAT_LEADER = "INSTANCE_CHAT",
     CHAT_MSG_PARTY = "PARTY",
     CHAT_MSG_PARTY_LEADER = "PARTY",
     CHAT_MSG_RAID = "RAID",
@@ -86,6 +88,18 @@ local function IsOwnMessage(sender, senderGUID)
     end
 
     return false
+end
+
+-- The chat type for your current group, or nil when ungrouped. Queued
+-- dungeon/raid groups use instance chat instead of party/raid.
+local function GroupChatType()
+    if LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        return "INSTANCE_CHAT"
+    elseif IsInRaid() then
+        return "RAID"
+    elseif IsInGroup() then
+        return "PARTY"
+    end
 end
 
 local function CanAttemptSend(chatType)
@@ -199,7 +213,10 @@ local function HandleSystemMessage(message)
     if newMember then
         Debug(newMember .. " joined the guild; welcoming in " .. GUILD_WELCOME_DELAY_SECONDS .. "s")
         C_Timer.After(GUILD_WELCOME_DELAY_SECONDS, function()
-            AttemptSend(GUILD_WELCOME_TEXT, "GUILD")
+            -- Replies may have been turned off during the delay.
+            if YeahRightDB.enabled then
+                AttemptSend(GUILD_WELCOME_TEXT, "GUILD")
+            end
         end)
     end
 end
@@ -219,13 +236,9 @@ local function HandleLootMessage(message)
         return
     end
 
-    -- Queued dungeon/raid groups use instance chat instead of party/raid.
-    if LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
-        AttemptSend(LOOT_WON_TEXT, "INSTANCE_CHAT")
-    elseif IsInRaid() then
-        AttemptSend(LOOT_WON_TEXT, "RAID")
-    elseif IsInGroup() then
-        AttemptSend(LOOT_WON_TEXT, "PARTY")
+    local groupChatType = GroupChatType()
+    if groupChatType then
+        AttemptSend(LOOT_WON_TEXT, groupChatType)
     end
 end
 
@@ -238,10 +251,9 @@ local function AnnounceLevelUp()
         AttemptSend(LEVEL_UP_TEXT, "GUILD")
     end
 
-    if IsInRaid() then
-        AttemptSend(LEVEL_UP_TEXT, "RAID")
-    elseif IsInGroup() then
-        AttemptSend(LEVEL_UP_TEXT, "PARTY")
+    local groupChatType = GroupChatType()
+    if groupChatType then
+        AttemptSend(LEVEL_UP_TEXT, groupChatType)
     end
 end
 

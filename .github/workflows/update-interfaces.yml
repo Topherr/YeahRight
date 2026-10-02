@@ -22,9 +22,16 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
+
+      # GitHub disables scheduled workflows in public repos after 60 days
+      # without repository activity; re-enabling via the API resets that.
+      - name: Keep schedule alive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/update-interfaces.yml/enable"
 
       - name: Compare TOC with live client versions
         id: check

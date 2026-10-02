@@ -9,6 +9,7 @@ patch version. Prints "changed=true|false" for the workflow.
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 
 TOC = "YeahRight.toc"
@@ -18,8 +19,11 @@ REGION = "us"
 
 def client_version(product):
     url = f"https://{REGION}.version.battle.net/v2/products/{product}/versions"
-    with urllib.request.urlopen(url, timeout=30) as response:
-        lines = response.read().decode().splitlines()
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:
+            lines = response.read().decode().splitlines()
+    except urllib.error.HTTPError as error:
+        sys.exit(f"{product}: {url} returned {error.code}; update PRODUCTS in the workflow")
 
     header = next(line for line in lines if line.startswith("Region!"))
     columns = [column.split("!")[0] for column in header.split("|")]
@@ -58,19 +62,23 @@ def main():
     major, minor, patch, suffix = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(.*)", old_version).groups()
     new_version = f"{major}.{minor}.{int(patch) + 1}{suffix}"
 
+    with open(README) as f:
+        readme = f.read()
+    version_line = f"Version {old_version}\n"
+    history = "VERSION HISTORY\n---------------\n"
+    if version_line not in readme or history not in readme:
+        sys.exit(f"{README} is missing {version_line.strip()!r} or the VERSION HISTORY heading")
+
     toc = re.sub(r"^## Interface:.*$", f"## Interface: {interfaces}", toc, count=1, flags=re.M)
     toc = re.sub(r"^## Version:.*$", f"## Version: {new_version}", toc, count=1, flags=re.M)
     with open(TOC, "w") as f:
         f.write(toc)
 
     clients = ", ".join(versions.values())
-    with open(README) as f:
-        readme = f.read()
-    readme = readme.replace(f"Version {old_version}\n", f"Version {new_version}\n", 1)
+    readme = readme.replace(version_line, f"Version {new_version}\n", 1)
     readme = readme.replace(
-        "VERSION HISTORY\n---------------\n",
-        "VERSION HISTORY\n---------------\n"
-        f"{new_version}\n"
+        history,
+        f"{history}{new_version}\n"
         f"- Updated the TOC interface to {interfaces} for clients {clients}.\n\n",
         1,
     )

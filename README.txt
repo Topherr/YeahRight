@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.5.2-beta
+Version 0.5.3-beta
 
 WHAT IT DOES
 ------------
@@ -17,8 +17,8 @@ the addon replies "grats" in that chat type. "Ding!", "DING", and "ding 60"
 trigger it; "dinged" and "dinging" do not.
 
 When you level up, the addon says "ding" in guild chat (if you are in a guild)
-and in raid or party chat (if you are in a group). Yes, it will then grats
-you for your own ding.
+and in instance, raid, or party chat (if you are in a group). Yes, it will
+then grats you for your own ding.
 
 YOINK
 -----
@@ -28,10 +28,12 @@ or instance chat.
 GUILD WELCOME
 -------------
 When someone joins your guild, the addon waits 5 seconds (so the new member
-can see guild chat) and then says "WELCOME TO THE GUILD" in guild chat. Every addon user in the guild will send it.
+can see guild chat) and then says "WELCOME TO THE GUILD" in guild chat. Every
+addon user in the guild will send it.
 
 Supported chat types:
 - Guild
+- Instance / Instance Leader (dungeon and raid finder groups)
 - Party / Party Leader
 - Raid / Raid Leader
 - Say
@@ -50,8 +52,9 @@ Longer joined words such as "yeahrightly" do not trigger it.
 LOOP PREVENTION
 ---------------
 Each trigger has its own 10-second suppression window per chat type. Your own
-original "yeah right" or "yeahright" also starts that window. This lets multiple addon
-users respond once without their responses creating an endless loop.
+original "yeah right" or "yeahright" also starts that window. This lets
+multiple addon users respond once without their responses creating an
+endless loop.
 
 COMMANDS
 --------
@@ -77,6 +80,7 @@ https://github.com/Topherr/YeahRight/releases/latest
    Interface\AddOns\YeahRight\YeahRight.toc
    Interface\AddOns\YeahRight\YeahRight.lua
    Interface\AddOns\YeahRight\README.txt
+   Interface\AddOns\YeahRight\Media\Icon.tga
 
 3. At the character-selection screen, open AddOns and enable "Yeah Right".
 
@@ -106,6 +110,13 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.5.3-beta
+- Replies to "yeah right" and "ding" in instance chat (dungeon and raid
+  finder groups).
+- Level-up "ding" now goes to instance chat in finder groups; it previously
+  tried party chat there, which the client rejects.
+- The guild welcome is not sent if replies are turned off during its delay.
+
 0.5.2-beta
 - Falls back to the global SendChatMessage and securecall on clients that
   lack C_ChatInfo.SendChatMessage or securecallfunction.
