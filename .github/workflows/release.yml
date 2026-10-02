@@ -33,6 +33,7 @@ jobs:
           unzip -l "YeahRight-${{ steps.version.outputs.version }}.zip"
 
       - name: Publish release
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
@@ -42,9 +43,34 @@ jobs:
           # its zip and tag always match the latest commit on main.
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release delete "$tag" --cleanup-tag --yes
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
           fi
           gh release create "$tag" "YeahRight-$VERSION.zip" \
             --target "$GITHUB_SHA" \
             --title "Yeah Right $VERSION" \
             --generate-notes \
             --latest
+
+      # CurseForge files can't be replaced, so only upload versions released
+      # for the first time, or when this workflow is run by hand (e.g. to
+      # retry a failed upload).
+      - name: Upload to CurseForge
+        if: steps.release.outputs.new == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_PROJECT_ID: ${{ vars.CF_PROJECT_ID }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if [ -z "$CF_API_KEY" ] || [ -z "$CF_PROJECT_ID" ]; then
+            echo "::notice::Skipping CurseForge upload: set the CF_API_KEY secret and CF_PROJECT_ID variable to enable it"
+            exit 0
+          fi
+          python3 .github/scripts/curseforge_metadata.py > metadata.json
+          cat metadata.json
+          curl --fail-with-body -sS \
+            -H "X-Api-Token: $CF_API_KEY" \
+            -F "metadata=<metadata.json" \
+            -F "file=@YeahRight-$VERSION.zip" \
+            "https://wow.curseforge.com/api/projects/$CF_PROJECT_ID/upload-file"
