@@ -1,5 +1,5 @@
 YEAH RIGHT
-Version 0.5.3-beta
+Version 0.5.4-beta
 
 WHAT IT DOES
 ------------
@@ -110,6 +110,9 @@ NOTES
 
 VERSION HISTORY
 ---------------
+0.5.4-beta
+- Updated the TOC interface to 120105, 16001 for clients 12.1.5.70340, 1.60.1.70338.
+
 0.5.3-beta
 - Replies to "yeah right" and "ding" in instance chat (dungeon and raid
   finder groups).
